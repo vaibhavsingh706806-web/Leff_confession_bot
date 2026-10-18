@@ -1,8 +1,29 @@
 import os
+import http.server
+import socketserver
+import threading
 import telebot
 
+# 1. Render ke liye background mein ek chota web server chalu karna zaroori hai
+PORT = int(os.environ.get("PORT", 8080))
+
+class Handler(http.server.SimpleHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Leff Bot is alive!")
+
+def run_server():
+    with socketserver.TCPServer(("", PORT), Handler) as httpd:
+        print(f"Serving web server on port {PORT}")
+        httpd.serve_forever()
+
+server_thread = threading.Thread(target=run_server, daemon=True)
+server_thread.start()
+
+# 2. Telegram Bot Logic
 TOKEN = os.environ.get("8721256256:AAGNg7gIw9ZjOsW15UqBOgmTjtiHtIeZO0k")
-CHANNEL_USERNAME = os.environ.get("@leffconfession")
+CHANNEL_USERNAME = os.environ.get("@LeffConfessions")
 
 bot = telebot.TeleBot(TOKEN)
 confession_counter = 1
