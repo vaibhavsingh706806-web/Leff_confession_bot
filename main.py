@@ -4,14 +4,14 @@ import socketserver
 import threading
 import telebot
 
-# 1. Render ke liye background mein ek chota web server chalu karna zaroori hai
+# 1. Dummy Web Server for Render
 PORT = int(os.environ.get("PORT", 8080))
 
 class Handler(http.server.SimpleHTTPRequestHandler):
     def do_GET(self):
         self.send_response(200)
         self.end_headers()
-        self.wfile.write(b"Leff Bot is alive!")
+        self.wfile.write(b"Leff Bot is running 24/7!")
 
 def run_server():
     with socketserver.TCPServer(("", PORT), Handler) as httpd:
@@ -21,9 +21,13 @@ def run_server():
 server_thread = threading.Thread(target=run_server, daemon=True)
 server_thread.start()
 
-# 2. Telegram Bot Logic
+# 2. Get Credentials safely
 TOKEN = os.environ.get("8721256256:AAGNg7gIw9ZjOsW15UqBOgmTjtiHtIeZO0k")
 CHANNEL_USERNAME = os.environ.get("@LeffConfessions")
+
+if not TOKEN:
+    print("ERROR: BOT_TOKEN is missing!")
+    exit(1)
 
 bot = telebot.TeleBot(TOKEN)
 confession_counter = 1
@@ -63,4 +67,5 @@ def handle_confession(message):
         bot.reply_to(message, f"❌ Error: Message post nahi ho paya.\nDetails: {e}")
 
 print("Leff Bot Live Ho Gaya Hai!")
-bot.infinity_polling()
+# non-stop polling with auto-reconnect
+bot.infinity_polling(timeout=10, long_polling_timeout=5)
